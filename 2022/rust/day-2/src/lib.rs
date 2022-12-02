@@ -76,6 +76,47 @@ pub fn part_1(input: String) -> u32 {
         .sum()
 }
 
+fn encode_to_result(encoded: &str) -> Result {
+    match encoded {
+        "Z" => Result::Win,
+        "Y" => Result::Draw,
+        "X" => Result::Lose,
+        _ => panic!("invalid encode"),
+    }
+}
+
+fn result_to_move(result: &Result, opponent: Move) -> Move {
+    match result {
+        Result::Draw => opponent,
+        Result::Win => match opponent {
+            Move::Rock => Move::Paper,
+            Move::Paper => Move::Scissors,
+            Move::Scissors => Move::Rock,
+        },
+        Result::Lose => match opponent {
+            Move::Rock => Move::Scissors,
+            Move::Paper => Move::Rock,
+            Move::Scissors => Move::Paper,
+        },
+    }
+}
+
+pub fn part_2(input: String) -> u32 {
+    let turns = input
+        .lines()
+        .map(|turn| turn.split_whitespace().collect::<Vec<&str>>());
+
+    let mut score: u32 = 0;
+
+    for turn in turns {
+        let opponent_move = turn_to_move(turn[0]);
+        let result = encode_to_result(turn[1]);
+        let player_move = result_to_move(&result, opponent_move);
+        score += result.value() + player_move.value();
+    }
+    score
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -87,5 +128,10 @@ mod tests {
     #[test]
     fn total_score() {
         assert_eq!(part_1(INPUT.to_string()), 15);
+    }
+
+    #[test]
+    fn corrected_total_score() {
+        assert_eq!(part_2(INPUT.to_string()), 12);
     }
 }

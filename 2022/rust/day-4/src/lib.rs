@@ -27,8 +27,8 @@ pub fn part_1(input: String) -> u32 {
         .lines()
         .map(|pair| pair.parse::<ElfPair>().unwrap())
         .filter(|ElfPair(first_elf, second_elf)| {
-            let first_elf_range = first_elf.0..(first_elf.1 + 1);
-            let second_elf_range = second_elf.0..(second_elf.1 + 1);
+            let first_elf_range = first_elf.0..=first_elf.1;
+            let second_elf_range = second_elf.0..=second_elf.1;
 
             if first_elf_range.contains(&second_elf.0) && first_elf_range.contains(&second_elf.1) {
                 return true;
@@ -38,8 +38,7 @@ pub fn part_1(input: String) -> u32 {
             }
             false
         })
-        .collect::<Vec<_>>()
-        .len() as u32
+        .count() as u32
 }
 
 pub fn part_2(input: String) -> u32 {
@@ -47,8 +46,8 @@ pub fn part_2(input: String) -> u32 {
         .lines()
         .map(|pair| pair.parse::<ElfPair>().unwrap())
         .filter(|ElfPair(first_elf, second_elf)| {
-            let first_elf_range = first_elf.0..(first_elf.1 + 1);
-            let second_elf_range = second_elf.0..(second_elf.1 + 1);
+            let first_elf_range = first_elf.0..=first_elf.1;
+            let second_elf_range = second_elf.0..=second_elf.1;
 
             if first_elf_range.contains(&second_elf.0) || second_elf_range.contains(&first_elf.0) {
                 true
@@ -56,8 +55,7 @@ pub fn part_2(input: String) -> u32 {
                 false
             }
         })
-        .collect::<Vec<_>>()
-        .len() as u32
+        .count() as u32
 }
 
 #[cfg(test)]

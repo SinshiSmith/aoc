@@ -1,5 +1,6 @@
 use std::{convert::Infallible, str::FromStr};
 
+#[derive(Debug)]
 struct Elf(u32, u32);
 
 impl FromStr for Elf {
@@ -41,6 +42,24 @@ pub fn part_1(input: String) -> u32 {
         .len() as u32
 }
 
+pub fn part_2(input: String) -> u32 {
+    input
+        .lines()
+        .map(|pair| pair.parse::<ElfPair>().unwrap())
+        .filter(|ElfPair(first_elf, second_elf)| {
+            let first_elf_range = first_elf.0..(first_elf.1 + 1);
+            let second_elf_range = second_elf.0..(second_elf.1 + 1);
+
+            if first_elf_range.contains(&second_elf.0) || second_elf_range.contains(&first_elf.0) {
+                true
+            } else {
+                false
+            }
+        })
+        .collect::<Vec<_>>()
+        .len() as u32
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,5 +74,9 @@ mod tests {
     #[test]
     fn how_many_contained() {
         assert_eq!(part_1(INPUT.to_string()), 2);
+    }
+    #[test]
+    fn how_many_overlapped() {
+        assert_eq!(part_2(INPUT.to_string()), 4);
     }
 }

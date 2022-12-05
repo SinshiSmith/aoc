@@ -109,6 +109,41 @@ pub fn part_1(input: String) -> String {
     answer
 }
 
+pub fn part_2(input: String) -> String {
+    let mut stack_hash_map: HashMap<usize, Vec<char>> = HashMap::new();
+
+    let (input, crates) = total_crates(&input).unwrap();
+    let (input, _) = crate_number_parsing(input).unwrap();
+    let (_, instructions) = input_parser(&input).unwrap();
+
+    for row in crates.iter().rev() {
+        for (idx, crate_name) in row.iter().enumerate() {
+            if !crate_name.is_whitespace() {
+                stack_hash_map
+                    .entry(idx + 1)
+                    .or_insert(Vec::new())
+                    .push(*crate_name);
+            }
+        }
+    }
+
+    for (amount, from, to) in instructions {
+        let from_stack = stack_hash_map.get_mut(&(from as usize)).unwrap();
+        let amount = from_stack.len() - (amount as usize);
+        let mut moved = from_stack.drain(amount..).collect();
+        stack_hash_map
+            .entry(to as usize)
+            .and_modify(|stack| stack.append(&mut moved));
+    }
+
+    let mut answer = "".to_string();
+    for key in 1..=stack_hash_map.len() {
+        answer.push(*stack_hash_map.get(&key).unwrap().last().unwrap());
+    }
+
+    answer
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -126,5 +161,10 @@ mod tests {
     #[test]
     fn top_crates() {
         assert_eq!(part_1(INPUT.to_string()), "CMZ");
+    }
+
+    #[test]
+    fn top_crates_corrected() {
+        assert_eq!(part_1(INPUT.to_string()), "MCD");
     }
 }

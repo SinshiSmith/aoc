@@ -1,36 +1,34 @@
-use std::collections::VecDeque;
-
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
 
 pub fn part_1(input: &str) -> u32 {
-    let mut tracker = VecDeque::new();
+    let mut tracker = String::new();
     let mut chars = input.chars().enumerate();
     while tracker.len() < 4 {
         let (_, current) = chars.next().unwrap();
-        if !tracker.contains(&current) {
-            tracker.push_back(current);
+        if !tracker.contains(current) {
+            tracker.push(current);
         } else {
-            let first_appear = tracker.iter().position(|char| *char == current).unwrap();
+            let first_appear = tracker.chars().position(|char| char == current).unwrap();
             drop(tracker.drain(..=first_appear));
-            tracker.push_back(current);
+            tracker.push(current);
         }
     }
     chars.next().unwrap().0 as u32
 }
 
 pub fn part_2(input: &str) -> u32 {
-    let mut tracker = VecDeque::new();
+    let mut tracker = String::new();
     let mut chars = input.chars().enumerate();
     while tracker.len() < 14 {
         let (_, current) = chars.next().unwrap();
-        if !tracker.contains(&current) {
-            tracker.push_back(current);
+        if !tracker.contains(current) {
+            tracker.push(current);
         } else {
-            let first_appear = tracker.iter().position(|char| *char == current).unwrap();
+            let first_appear = tracker.chars().position(|char| char == current).unwrap();
             drop(tracker.drain(..=first_appear));
-            tracker.push_back(current);
+            tracker.push(current);
         }
     }
     chars.next().unwrap().0 as u32

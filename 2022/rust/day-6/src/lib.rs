@@ -1,7 +1,3 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
 pub fn part_1(input: &str) -> u32 {
     let mut tracker = String::new();
     let mut chars = input.chars().enumerate();

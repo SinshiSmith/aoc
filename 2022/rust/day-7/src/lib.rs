@@ -1,48 +1,40 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::Infallible, str::FromStr};
 
 #[derive(Debug)]
-struct File<'a> {
-    name: &'a str,
+struct File {
     size: u64,
 }
 
-impl<'a> From<&'a str> for File<'a> {
-    fn from(s: &'a str) -> File<'a> {
+impl FromStr for File {
+    type Err = Infallible;
+    fn from_str(s: &str) -> Result<File, Infallible> {
         let mut file = s.split(" ");
-        File {
+        Ok(File {
             size: file.next().unwrap().parse::<u64>().unwrap(),
-            name: file.next().unwrap(),
-        }
+        })
     }
 }
 
-impl<'a> File<'a> {
+impl File {
     fn size(&self) -> u64 {
         self.size
     }
 }
 
 #[derive(Debug)]
-struct Folder<'a> {
-    name: &'a str,
-    files: Vec<File<'a>>,
+struct Folder {
+    files: Vec<File>,
     contains: Vec<String>,
 }
 
-impl<'a> From<&'a str> for Folder<'a> {
-    fn from(s: &'a str) -> Folder<'a> {
-        let file = s.split(" ");
+impl Folder {
+    fn new() -> Self {
         Folder {
-            name: file.last().unwrap(),
             files: vec![],
             contains: vec![],
         }
     }
-}
 
-const MAX_SIZE: u64 = 100000;
-
-impl<'a> Folder<'a> {
     fn inner_folders_size(&self, folders_map: &HashMap<String, Folder>) -> u64 {
         self.contains
             .iter()
@@ -55,6 +47,8 @@ impl<'a> Folder<'a> {
             + self.inner_folders_size(folders_map)
     }
 }
+
+const MAX_SIZE: u64 = 100000;
 
 pub fn part_1(input: String) -> u64 {
     let mut folders_map: HashMap<String, Folder> = HashMap::new();
@@ -77,31 +71,27 @@ pub fn part_1(input: String) -> u64 {
         }
 
         if line.starts_with("dir") {
-            let folder = Folder::from(line);
-            let parent = current_path.iter().rev().next().unwrap();
+            let folder_name = line.split(" ").last().unwrap();
             folders_map
                 .entry(current_path.join(""))
                 .or_insert(Folder {
-                    name: &parent,
                     files: vec![],
                     contains: vec![],
                 })
                 .contains
-                .push(current_path.join("") + &folder.name);
+                .push(current_path.join("") + folder_name);
 
-            folders_map.insert(current_path.join("") + &folder.name, folder);
+            folders_map.insert(current_path.join("") + folder_name, Folder::new());
         }
         if line.starts_with(|c: char| c.is_digit(10)) {
-            let folder = current_path.iter().last().unwrap();
             folders_map
                 .entry(current_path.join(""))
                 .or_insert(Folder {
-                    name: folder,
                     files: vec![],
                     contains: vec![],
                 })
                 .files
-                .push(File::from(line));
+                .push(line.parse::<File>().unwrap());
         }
     }
 
@@ -136,31 +126,27 @@ pub fn part_2(input: String) -> u64 {
         }
 
         if line.starts_with("dir") {
-            let folder = Folder::from(line);
-            let parent = current_path.iter().rev().next().unwrap();
+            let folder_name = line.split(" ").last().unwrap();
             folders_map
                 .entry(current_path.join(""))
                 .or_insert(Folder {
-                    name: &parent,
                     files: vec![],
                     contains: vec![],
                 })
                 .contains
-                .push(current_path.join("") + &folder.name);
+                .push(current_path.join("") + folder_name);
 
-            folders_map.insert(current_path.join("") + &folder.name, folder);
+            folders_map.insert(current_path.join("") + folder_name, Folder::new());
         }
         if line.starts_with(|c: char| c.is_digit(10)) {
-            let folder = current_path.iter().last().unwrap();
             folders_map
                 .entry(current_path.join(""))
                 .or_insert(Folder {
-                    name: folder,
                     files: vec![],
                     contains: vec![],
                 })
                 .files
-                .push(File::from(line));
+                .push(line.parse::<File>().unwrap());
         }
     }
 

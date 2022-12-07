@@ -50,6 +50,44 @@ impl Folder {
 
 const MAX_SIZE: u64 = 100000;
 
+fn add_folder_to_hash_map(
+    folders_map: &mut HashMap<String, Folder>,
+    folder_path: String,
+    folder_name: &str,
+) {
+    folders_map.insert(folder_path + folder_name, Folder::new());
+}
+
+fn add_file_to_folder(
+    folders_map: &mut HashMap<String, Folder>,
+    folder_name: String,
+    file_str: &str,
+) {
+    folders_map
+        .entry(folder_name)
+        .or_insert(Folder {
+            files: vec![],
+            contains: vec![],
+        })
+        .files
+        .push(file_str.parse::<File>().unwrap());
+}
+
+fn add_folder_to_folder(
+    folders_map: &mut HashMap<String, Folder>,
+    parent_key: String,
+    folder_name: &str,
+) {
+    folders_map
+        .entry(parent_key.clone())
+        .or_insert(Folder {
+            files: vec![],
+            contains: vec![],
+        })
+        .contains
+        .push(parent_key + folder_name);
+}
+
 pub fn part_1(input: String) -> u64 {
     let mut folders_map: HashMap<String, Folder> = HashMap::new();
     let mut current_path: Vec<&str> = vec!["/"];
@@ -72,26 +110,11 @@ pub fn part_1(input: String) -> u64 {
 
         if line.starts_with("dir") {
             let folder_name = line.split(" ").last().unwrap();
-            folders_map
-                .entry(current_path.join(""))
-                .or_insert(Folder {
-                    files: vec![],
-                    contains: vec![],
-                })
-                .contains
-                .push(current_path.join("") + folder_name);
-
-            folders_map.insert(current_path.join("") + folder_name, Folder::new());
+            add_folder_to_folder(&mut folders_map, current_path.join(""), folder_name);
+            add_folder_to_hash_map(&mut folders_map, current_path.join(""), folder_name);
         }
         if line.starts_with(|c: char| c.is_digit(10)) {
-            folders_map
-                .entry(current_path.join(""))
-                .or_insert(Folder {
-                    files: vec![],
-                    contains: vec![],
-                })
-                .files
-                .push(line.parse::<File>().unwrap());
+            add_file_to_folder(&mut folders_map, current_path.join(""), line);
         }
     }
 
@@ -127,26 +150,11 @@ pub fn part_2(input: String) -> u64 {
 
         if line.starts_with("dir") {
             let folder_name = line.split(" ").last().unwrap();
-            folders_map
-                .entry(current_path.join(""))
-                .or_insert(Folder {
-                    files: vec![],
-                    contains: vec![],
-                })
-                .contains
-                .push(current_path.join("") + folder_name);
-
-            folders_map.insert(current_path.join("") + folder_name, Folder::new());
+            add_folder_to_folder(&mut folders_map, current_path.join(""), folder_name);
+            add_folder_to_hash_map(&mut folders_map, current_path.join(""), folder_name);
         }
         if line.starts_with(|c: char| c.is_digit(10)) {
-            folders_map
-                .entry(current_path.join(""))
-                .or_insert(Folder {
-                    files: vec![],
-                    contains: vec![],
-                })
-                .files
-                .push(line.parse::<File>().unwrap());
+            add_file_to_folder(&mut folders_map, current_path.join(""), line);
         }
     }
 

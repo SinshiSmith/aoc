@@ -14,11 +14,17 @@ fn setup_grid(input: String) -> Grid<u32> {
     )
 }
 
-fn hidden_in_row(tree: &&u32, left: &[&u32], right: &[&u32]) -> bool {
-    left.iter().any(|left| left >= tree) && right.iter().any(|right| right >= tree)
-}
-fn hidden_in_col(tree: &&u32, up: &[&u32], down: &[&u32]) -> bool {
-    up.iter().any(|up| up >= tree) && down.iter().any(|down| down >= tree)
+fn hidden_tree<'a>(
+    tree: &&u32,
+    mut up: impl Iterator<Item = &'a u32>,
+    mut down: impl Iterator<Item = &'a u32>,
+    mut left: impl Iterator<Item = &'a u32>,
+    mut right: impl Iterator<Item = &'a u32>,
+) -> bool {
+    left.any(|left| left >= tree)
+        && right.any(|right| right >= tree)
+        && up.any(|up| up >= tree)
+        && down.any(|down| down >= tree)
 }
 
 pub fn part_1(input: String) -> usize {
@@ -30,15 +36,12 @@ pub fn part_1(input: String) -> usize {
         for col in 1..(cols - 1) {
             let tree = grid.get(row, col).unwrap();
 
-            let current_row = grid.iter_row(row).collect::<Vec<&u32>>();
-            let current_col = grid.iter_col(col).collect::<Vec<&u32>>();
+            let left = grid.iter_row(row).take(col);
+            let right = grid.iter_row(row).skip(col + 1);
+            let up = grid.iter_col(col).take(row);
+            let down = grid.iter_col(col).skip(row + 1);
 
-            let (left, right) = current_row.split_at(col);
-            let (up, down) = current_col.split_at(row);
-
-            if hidden_in_row(&tree, left, right.split_first().unwrap().1)
-                && hidden_in_col(&tree, up, down.split_first().unwrap().1)
-            {
+            if hidden_tree(&tree, up, down, left, right) {
                 visible -= 1;
             }
         }

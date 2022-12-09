@@ -5,7 +5,7 @@ enum Move {
     Y(i32),
 }
 
-#[derive(Default, Debug, PartialEq, Eq, Hash)]
+#[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 struct Position {
     x: i32,
     y: i32,
@@ -111,6 +111,51 @@ pub fn part_1(input: &str) -> usize {
     visited.len()
 }
 
+pub fn part_2(input: &str) -> usize {
+    let moves = input.lines().map(|line| line.parse::<Move>().unwrap());
+    let mut head = Position::default();
+    let mut tails = [Position::default(); 9];
+
+    let mut visited: HashSet<Position> = HashSet::new();
+
+    for head_move in moves {
+        match head_move {
+            Move::X(amount) => {
+                let (direction, repeat) = process_move(amount);
+                for _ in 0..repeat {
+                    head = move_head(direction, 'x', &head);
+                    for i in 0..9 {
+                        let current_head = if i == 0 { &head } else { &tails[i - 1] };
+
+                        tails[i] = move_tail(current_head, &tails[i]);
+                    }
+                    visited.insert(Position {
+                        x: tails[8].x,
+                        y: tails[8].y,
+                    });
+                }
+            }
+            Move::Y(amount) => {
+                let (direction, repeat) = process_move(amount);
+                for _ in 0..repeat {
+                    head = move_head(direction, 'y', &head);
+                    for i in 0..9 {
+                        let current_head = if i == 0 { &head } else { &tails[i - 1] };
+
+                        tails[i] = move_tail(current_head, &tails[i]);
+                    }
+                    visited.insert(Position {
+                        x: tails[8].x,
+                        y: tails[8].y,
+                    });
+                }
+            }
+        }
+    }
+
+    visited.len()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -124,9 +169,21 @@ D 1
 L 5
 R 2";
 
+    const INPUT2: &str = "R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20";
+
     #[test]
     fn visited_at_once() {
-        let result = part_1(INPUT);
-        assert_eq!(result, 13);
+        assert_eq!(part_1(INPUT), 13);
+    }
+    #[test]
+    fn last_tail_visited_at_once() {
+        assert_eq!(part_2(INPUT2), 36);
     }
 }

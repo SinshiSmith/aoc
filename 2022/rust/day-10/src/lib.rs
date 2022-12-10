@@ -42,6 +42,35 @@ pub fn part_1(input: &str) -> i32 {
         .sum::<i32>()
 }
 
+pub fn part_2(input: &str) -> String {
+    let mut register = 1;
+    let instructions = input.lines().flat_map(|line| {
+        let instruction = parse_instruction(line);
+        let cycles = std::iter::repeat(register).take(instruction.repeat);
+        register += instruction.value;
+        cycles
+    });
+
+    instructions
+        .enumerate()
+        .map(|(idx, value)| {
+            let normalized = (idx % 40) as i32;
+            let is_pixel = (-1..=1).contains(&(value - normalized));
+            if is_pixel {
+                "#"
+            } else {
+                "."
+            }
+        })
+        .enumerate()
+        .fold("".to_string(), |result, (idx, value)| {
+            if idx > 0 && (idx) % 40 == 0 {
+                return result + "\n" + value;
+            }
+            result + value
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -196,5 +225,19 @@ noop";
     #[test]
     fn signal_strength_sum() {
         assert_eq!(part_1(INPUT), 13140);
+    }
+
+    #[test]
+    fn sprite_drawing() {
+        assert_eq!(
+            part_2(INPUT),
+            "##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######....."
+                .to_string()
+        );
     }
 }

@@ -13,6 +13,38 @@ enum SignalItem {
     List(Vec<SignalItem>),
 }
 
+impl SignalItem {
+    fn get(&self) -> Vec<u8> {
+        match self {
+            SignalItem::Number(value) => vec![*value],
+            SignalItem::List(list) => {
+                if list.len() == 0 {
+                    vec![0]
+                } else {
+                    list.iter().flat_map(|item| item.get()).collect::<Vec<_>>()
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+struct FlatSignal {
+    items: Vec<u8>,
+}
+
+impl From<&SignalPart> for FlatSignal {
+    fn from(signal_part: &SignalPart) -> Self {
+        Self {
+            items: signal_part
+                .items
+                .iter()
+                .flat_map(|item| item.get())
+                .collect::<Vec<_>>(),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct SignalPart {
     items: Vec<SignalItem>,
@@ -151,6 +183,41 @@ pub fn part_1(input: &str) -> usize {
         .sum()
 }
 
+pub fn part_2(input: &str) -> usize {
+    let mut pairs = input_parser(input);
+    pairs.push(Pair {
+        left: SignalPart {
+            items: vec![SignalItem::Number(2)],
+        },
+        right: SignalPart {
+            items: vec![SignalItem::Number(6)],
+        },
+    });
+    let mut signals = pairs
+        .iter()
+        .flat_map(|pair| [&pair.left, &pair.right])
+        .map(|signal| FlatSignal::from(signal).items)
+        .collect::<Vec<_>>();
+    signals.sort();
+    // dbg!(&signals);
+    signals
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, signal)| {
+            if signal.len() == 1 {
+                if signal[0] == 2 || signal[0] == 6 {
+                    dbg!(signal);
+                    return Some(idx + 1);
+                }
+            }
+            None
+        })
+        .inspect(|item| {
+            dbg!(item);
+        })
+        .product()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -180,7 +247,12 @@ mod tests {
 [1,[2,[3,[4,[5,6,0]]]],8,9]";
 
     #[test]
-    fn it_works() {
+    fn in_order() {
         assert_eq!(part_1(INPUT), 13);
+    }
+
+    #[test]
+    fn decoder_key() {
+        assert_eq!(part_2(INPUT), 141);
     }
 }

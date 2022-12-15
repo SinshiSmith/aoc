@@ -69,7 +69,11 @@ fn area_map(input: Vec<Vec<Point>>) -> (HashMap<Point, Unit>, u32) {
     (unit_map, max_y)
 }
 
-fn next_point(current_point: &Point, unit_map: &HashMap<Point, Unit>) -> Option<Point> {
+fn next_point(
+    current_point: &Point,
+    unit_map: &HashMap<Point, Unit>,
+    floor_y: Option<u32>,
+) -> Option<Point> {
     let y = current_point.y + 1;
     let down = Point {
         x: current_point.x,
@@ -83,6 +87,10 @@ fn next_point(current_point: &Point, unit_map: &HashMap<Point, Unit>) -> Option<
         x: current_point.x + 1,
         y,
     };
+
+    if floor_y.is_some() && current_point.y == floor_y.unwrap() - 1 {
+        return None;
+    }
 
     if unit_map.get(&down).is_none() {
         return Some(down);
@@ -113,7 +121,7 @@ pub fn part_1(input: &str) -> usize {
                 all_rested = true;
             }
 
-            if let Some(next_point) = next_point(&current_point, &unit_map) {
+            if let Some(next_point) = next_point(&current_point, &unit_map, None) {
                 current_point = next_point;
             } else {
                 rested = true;
@@ -133,6 +141,38 @@ pub fn part_1(input: &str) -> usize {
         - 1
 }
 
+pub fn part_2(input: &str) -> usize {
+    let parsed = input_parser(input);
+    let (mut unit_map, max_y) = area_map(parsed);
+    let mut all_rested = false;
+
+    while !all_rested {
+        let mut rested = false;
+        let mut current_point = Point { x: 500, y: 0 };
+
+        while !rested {
+            if let Some(next_point) = next_point(&current_point, &unit_map, Some(max_y + 2)) {
+                current_point = next_point;
+            } else {
+                if current_point.y == 0 {
+                    all_rested = true;
+                }
+                rested = true;
+            }
+        }
+
+        unit_map.insert(current_point, Unit::Sand);
+    }
+
+    unit_map
+        .iter()
+        .filter(|(_, unit)| match unit {
+            Unit::Sand => true,
+            _ => false,
+        })
+        .count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -143,5 +183,10 @@ mod tests {
     #[test]
     fn rested_sand_count() {
         assert_eq!(part_1(INPUT), 24);
+    }
+
+    #[test]
+    fn blocked_sand_count() {
+        assert_eq!(part_2(INPUT), 93);
     }
 }
